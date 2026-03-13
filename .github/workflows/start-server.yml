@@ -13,27 +13,21 @@ jobs:
       - name: Check Korea holiday
         id: holiday
         run: |
-          python -m pip install holidays
-          python - <<'PY'
-          from datetime import datetime
-          from zoneinfo import ZoneInfo
-          from holidays import country_holidays
-          import os
+          TODAY=$(TZ=Asia/Seoul date +%Y-%m-%d)
+          YEAR=$(TZ=Asia/Seoul date +%Y)
 
-          today = datetime.now(ZoneInfo("Asia/Seoul")).date()
-          kr_holidays = country_holidays("KR", years=[today.year])
+          HOLIDAY=$(curl -s https://date.nager.at/api/v3/PublicHolidays/$YEAR/KR | grep $TODAY || true)
 
-          is_holiday = today in kr_holidays
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
-              f.write(f"is_holiday={'true' if is_holiday else 'false'}\n")
-              if is_holiday:
-                  f.write(f"holiday_name={kr_holidays.get(today)}\n")
-          PY
+          if [ -n "$HOLIDAY" ]; then
+            echo "is_holiday=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_holiday=false" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Skip on holiday
+      - name: Skip if holiday
         if: steps.holiday.outputs.is_holiday == 'true'
         run: |
-          echo "한국 공휴일/대체공휴일이라 서버 시작을 건너뜁니다: ${{ steps.holiday.outputs.holiday_name }}"
+          echo "한국 공휴일이라 서버 시작을 건너뜁니다."
 
       - name: Start server
         if: steps.holiday.outputs.is_holiday != 'true'
