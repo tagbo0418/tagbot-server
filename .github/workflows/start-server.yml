@@ -8,20 +8,18 @@ on:
 jobs:
   start-server:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check Korea holiday
         id: holiday
         run: |
           TODAY=$(TZ=Asia/Seoul date +%Y-%m-%d)
           YEAR=$(TZ=Asia/Seoul date +%Y)
-
-          HOLIDAY=$(curl -s https://date.nager.at/api/v3/PublicHolidays/$YEAR/KR | grep $TODAY || true)
+          HOLIDAY=$(curl -s "https://date.nager.at/api/v3/PublicHolidays/$YEAR/KR" | grep "$TODAY" || true)
 
           if [ -n "$HOLIDAY" ]; then
-            echo "is_holiday=true" >> $GITHUB_OUTPUT
+            echo "is_holiday=true" >> "$GITHUB_OUTPUT"
           else
-            echo "is_holiday=false" >> $GITHUB_OUTPUT
+            echo "is_holiday=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Skip if holiday
