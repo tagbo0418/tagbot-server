@@ -1,13 +1,10 @@
-name: Start NCP Server
+          TIMESTAMP=$(($(date +%s%N)/1000000))
+          METHOD="GET"
+          URI="/vserver/v2/startServerInstances?serverInstanceNoList.1=${{ secrets.NCP_SERVER_INSTANCE_NO }}"
+          MESSAGE="${METHOD} ${URI}\n${TIMESTAMP}\n${{ secrets.NCP_ACCESS_KEY }}"
+          SIGNATURE=$(printf "%b" "${MESSAGE}" | openssl dgst -sha256 -hmac "${{ secrets.NCP_SECRET_KEY }}" -binary | openssl base64)
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '30 22 * * 0-4'
-
-jobs:
-  start-server:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Start server
-        run: |
+          curl -X GET "https://ncloud.apigw.ntruss.com${URI}" \
+            -H "x-ncp-apigw-timestamp: ${TIMESTAMP}" \
+            -H "x-ncp-iam-access-key: ${{ secrets.NCP_ACCESS_KEY }}" \
+            -H "x-ncp-apigw-signature-v2: ${SIGNATURE}"
