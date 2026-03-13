@@ -9,26 +9,7 @@ jobs:
   start-server:
     runs-on: ubuntu-latest
     steps:
-      - name: Check Korea holiday
-        id: holiday
-        run: |
-          TODAY=$(TZ=Asia/Seoul date +%Y-%m-%d)
-          YEAR=$(TZ=Asia/Seoul date +%Y)
-          HOLIDAY=$(curl -s "https://date.nager.at/api/v3/PublicHolidays/$YEAR/KR" | grep "$TODAY" || true)
-
-          if [ -n "$HOLIDAY" ]; then
-            echo "is_holiday=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "is_holiday=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Skip if holiday
-        if: steps.holiday.outputs.is_holiday == 'true'
-        run: |
-          echo "한국 공휴일이라 서버 시작을 건너뜁니다."
-
       - name: Start server
-        if: steps.holiday.outputs.is_holiday != 'true'
         run: |
           TIMESTAMP=$(($(date +%s%N)/1000000))
           METHOD="GET"
