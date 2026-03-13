@@ -10,4 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Start server
-        run: echo start
+        run: |
+          echo start
+          date
